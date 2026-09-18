@@ -1,0 +1,1341 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: RealEstate AI API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: users
+    description: User management
+  - name: properties
+    description: Property management
+  - name: projects
+    description: Development projects
+  - name: zones
+    description: Zone/area directory
+  - name: zoneNotes
+    description: Personal zone research notes
+  - name: aiChat
+    description: AI assistant chat
+  - name: investmentInterests
+    description: Investment interest requests
+  - name: notifications
+    description: In-app notifications
+  - name: admin
+    description: Admin operations
+  - name: Storage
+    description: Object storage upload and serving endpoints
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ── Users ──────────────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/me/stats:
+    get:
+      operationId: getMyStats
+      tags: [users]
+      summary: Get portfolio stats for current user
+      responses:
+        "200":
+          description: User stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStats"
+
+  # ── Properties ─────────────────────────────────────────────────────────────
+  /properties:
+    get:
+      operationId: listProperties
+      tags: [properties]
+      summary: List user's properties
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+    post:
+      operationId: createProperty
+      tags: [properties]
+      summary: Create a new property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyInput"
+      responses:
+        "201":
+          description: Created property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+
+  /properties/portfolio-summary:
+    get:
+      operationId: getPortfolioSummary
+      tags: [properties]
+      summary: Get portfolio summary stats
+      responses:
+        "200":
+          description: Portfolio summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioSummary"
+
+  /properties/{id}:
+    get:
+      operationId: getProperty
+      tags: [properties]
+      summary: Get a property by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProperty
+      tags: [properties]
+      summary: Update a property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyUpdate"
+      responses:
+        "200":
+          description: Updated property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+    delete:
+      operationId: deleteProperty
+      tags: [properties]
+      summary: Delete a property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Projects ───────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List user's development projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/public:
+    get:
+      operationId: listPublicProjects
+      tags: [projects]
+      summary: List public projects (no auth required)
+      responses:
+        "200":
+          description: Public projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Zones ──────────────────────────────────────────────────────────────────
+  /zones:
+    get:
+      operationId: listZones
+      tags: [zones]
+      summary: List all zones with market indicators
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search filter
+      responses:
+        "200":
+          description: Zones list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Zone"
+
+  /zones/{id}:
+    get:
+      operationId: getZone
+      tags: [zones]
+      summary: Get a zone by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Zone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+
+  # ── Zone Notes ─────────────────────────────────────────────────────────────
+  /zone-notes:
+    get:
+      operationId: listZoneNotes
+      tags: [zoneNotes]
+      summary: List current user's zone notes
+      responses:
+        "200":
+          description: Zone notes with zone data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ZoneNote"
+
+  /zone-notes/{zoneId}:
+    get:
+      operationId: getZoneNote
+      tags: [zoneNotes]
+      summary: Get note for a specific zone
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Zone note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ZoneNote"
+        "404":
+          description: No note for this zone
+    put:
+      operationId: upsertZoneNote
+      tags: [zoneNotes]
+      summary: Create or update note for a zone
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ZoneNoteInput"
+      responses:
+        "200":
+          description: Saved zone note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ZoneNote"
+
+  # ── AI Chat ────────────────────────────────────────────────────────────────
+  /ai/conversations:
+    get:
+      operationId: listConversations
+      tags: [aiChat]
+      summary: List user's AI conversations
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiConversation"
+    post:
+      operationId: createConversation
+      tags: [aiChat]
+      summary: Start a new AI conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiConversation"
+
+  /ai/conversations/{id}:
+    get:
+      operationId: getConversation
+      tags: [aiChat]
+      summary: Get a conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiConversationWithMessages"
+    delete:
+      operationId: deleteConversation
+      tags: [aiChat]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ai/conversations/{id}/messages:
+    post:
+      operationId: sendMessage
+      tags: [aiChat]
+      summary: Send a message to the AI assistant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiMessageInput"
+      responses:
+        "200":
+          description: AI response with structured data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiMessage"
+
+  # ── Investment Interests ───────────────────────────────────────────────────
+  /investment-interests:
+    get:
+      operationId: listInvestmentInterests
+      tags: [investmentInterests]
+      summary: List current user's investment interests
+      responses:
+        "200":
+          description: Investment interests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvestmentInterest"
+    post:
+      operationId: createInvestmentInterest
+      tags: [investmentInterests]
+      summary: Express interest in investing in a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestmentInterestInput"
+      responses:
+        "201":
+          description: Created interest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentInterest"
+
+  # ── Notifications ──────────────────────────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List user's notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/unread-count:
+    get:
+      operationId: getUnreadNotificationCount
+      tags: [notifications]
+      summary: Get unread notification count
+      responses:
+        "200":
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadCount"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "204":
+          description: All marked read
+
+  # ── Admin ──────────────────────────────────────────────────────────────────
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get platform-wide stats
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      summary: List all users
+      responses:
+        "200":
+          description: All users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /admin/users/{id}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [admin]
+      summary: Update a user's role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /admin/properties:
+    get:
+      operationId: listAdminProperties
+      tags: [admin]
+      summary: List all properties (admin moderation queue)
+      responses:
+        "200":
+          description: All properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+
+  /admin/investment-interests:
+    get:
+      operationId: listAdminInvestmentInterests
+      tags: [admin]
+      summary: List all investment interest requests
+      responses:
+        "200":
+          description: All investment interests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvestmentInterest"
+
+  /admin/investment-interests/{id}/status:
+    patch:
+      operationId: updateInvestmentInterestStatus
+      tags: [admin]
+      summary: Update investment interest status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterestStatusUpdate"
+      responses:
+        "200":
+          description: Updated interest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentInterest"
+
+  # ── Object Storage ─────────────────────────────────────────────────────────
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+
+  /storage/objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getObject
+      summary: Serve a private object
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    # ── Users ────────────────────────────────────────────────────────────────
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [user, admin]
+        investorType:
+          type: ["string", "null"]
+          enum: [fix_flip, rental, development, mixed, null]
+        bio:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, clerkId, email, role, createdAt]
+
+    UserUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        avatarUrl:
+          type: string
+        investorType:
+          type: string
+          enum: [fix_flip, rental, development, mixed]
+        bio:
+          type: string
+
+    UserStats:
+      type: object
+      properties:
+        totalProperties:
+          type: integer
+        totalPortfolioValue:
+          type: number
+        totalMonthlyIncome:
+          type: number
+        avgRoi:
+          type: number
+        activeProjects:
+          type: integer
+      required: [totalProperties, totalPortfolioValue, totalMonthlyIncome, avgRoi, activeProjects]
+
+    RoleUpdate:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, admin]
+      required: [role]
+
+    # ── Properties ───────────────────────────────────────────────────────────
+    Property:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        neighborhood:
+          type: ["string", "null"]
+        propertyType:
+          type: string
+          enum: [casa, depa, local, terreno]
+        status:
+          type: string
+          enum: [activa, vendida, en_rehab]
+        purchasePrice:
+          type: number
+        currentValue:
+          type: ["number", "null"]
+        rentAmount:
+          type: ["number", "null"]
+        expensesMonthly:
+          type: ["number", "null"]
+        netIncome:
+          type: ["number", "null"]
+        occupancyRate:
+          type: ["number", "null"]
+        nextInspectionDate:
+          type: ["string", "null"]
+        images:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, title, address, city, propertyType, status, purchasePrice, images, isPublic, createdAt]
+
+    PropertyInput:
+      type: object
+      properties:
+        title:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        neighborhood:
+          type: string
+        propertyType:
+          type: string
+          enum: [casa, depa, local, terreno]
+        status:
+          type: string
+          enum: [activa, vendida, en_rehab]
+        purchasePrice:
+          type: number
+        currentValue:
+          type: number
+        rentAmount:
+          type: number
+        expensesMonthly:
+          type: number
+        netIncome:
+          type: number
+        occupancyRate:
+          type: number
+        nextInspectionDate:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+      required: [title, address, city, propertyType, status, purchasePrice]
+
+    PropertyUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        neighborhood:
+          type: string
+        propertyType:
+          type: string
+          enum: [casa, depa, local, terreno]
+        status:
+          type: string
+          enum: [activa, vendida, en_rehab]
+        purchasePrice:
+          type: number
+        currentValue:
+          type: number
+        rentAmount:
+          type: number
+        expensesMonthly:
+          type: number
+        netIncome:
+          type: number
+        occupancyRate:
+          type: number
+        nextInspectionDate:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+
+    PortfolioSummary:
+      type: object
+      properties:
+        totalValue:
+          type: number
+        totalMonthlyIncome:
+          type: number
+        avgOccupancy:
+          type: number
+        propertyCount:
+          type: integer
+        overdueInspections:
+          type: integer
+        valueHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValuePoint"
+      required: [totalValue, totalMonthlyIncome, avgOccupancy, propertyCount, overdueInspections, valueHistory]
+
+    ValuePoint:
+      type: object
+      properties:
+        month:
+          type: string
+        value:
+          type: number
+      required: [month, value]
+
+    # ── Projects ─────────────────────────────────────────────────────────────
+    ProjectPhase:
+      type: object
+      properties:
+        name:
+          type: string
+        progress:
+          type: integer
+        status:
+          type: string
+          enum: [pending, active, completed]
+      required: [name, progress, status]
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        location:
+          type: string
+        description:
+          type: ["string", "null"]
+        type:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [preventa, construccion, entrega, completado]
+        roiEstimated:
+          type: ["number", "null"]
+        totalInvestment:
+          type: ["number", "null"]
+        raisedAmount:
+          type: ["number", "null"]
+        phases:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectPhase"
+        isPublic:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+        investorCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, title, location, status, phases, isPublic, images, investorCount, createdAt]
+
+    ProjectInput:
+      type: object
+      properties:
+        title:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+          enum: [preventa, construccion, entrega, completado]
+        roiEstimated:
+          type: number
+        totalInvestment:
+          type: number
+        raisedAmount:
+          type: number
+        phases:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectPhase"
+        isPublic:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+      required: [title, location, status]
+
+    ProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+          enum: [preventa, construccion, entrega, completado]
+        roiEstimated:
+          type: number
+        totalInvestment:
+          type: number
+        raisedAmount:
+          type: number
+        phases:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectPhase"
+        isPublic:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+
+    # ── Zones ─────────────────────────────────────────────────────────────────
+    Zone:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        city:
+          type: string
+        pricePerM2:
+          type: number
+        annualGrowthPct:
+          type: number
+        rentalYieldPct:
+          type: number
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, city, pricePerM2, annualGrowthPct, rentalYieldPct, createdAt]
+
+    ZoneNote:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        zoneId:
+          type: integer
+        content:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        zone:
+          $ref: "#/components/schemas/Zone"
+      required: [id, userId, zoneId, content, updatedAt, zone]
+
+    ZoneNoteInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    # ── AI Chat ───────────────────────────────────────────────────────────────
+    AiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, title, createdAt]
+
+    AiConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+      required: [title]
+
+    AiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        structuredData:
+          type: ["object", "null"]
+          description: Structured ARV/analysis data for rich card rendering
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, conversationId, role, content, createdAt]
+
+    AiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiMessage"
+      required: [id, userId, title, createdAt, messages]
+
+    AiMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    # ── Investment Interests ───────────────────────────────────────────────────
+    InvestmentInterest:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        projectId:
+          type: integer
+        amountInterested:
+          type: ["number", "null"]
+        message:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pendiente, contactado, rechazado]
+        createdAt:
+          type: string
+          format: date-time
+        project:
+          $ref: "#/components/schemas/Project"
+        user:
+          $ref: "#/components/schemas/User"
+      required: [id, userId, projectId, status, createdAt, project, user]
+
+    InvestmentInterestInput:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        amountInterested:
+          type: number
+        message:
+          type: string
+      required: [projectId]
+
+    InterestStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pendiente, contactado, rechazado]
+      required: [status]
+
+    # ── Notifications ─────────────────────────────────────────────────────────
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        type:
+          type: string
+          enum: [inspection_due, investment_update, project_update, system]
+        title:
+          type: string
+        body:
+          type: string
+        read:
+          type: boolean
+        entityId:
+          type: ["integer", "null"]
+        entityType:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, type, title, body, read, createdAt]
+
+    UnreadCount:
+      type: object
+      properties:
+        count:
+          type: integer
+      required: [count]
+
+    # ── Admin ─────────────────────────────────────────────────────────────────
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalProperties:
+          type: integer
+        activeProjects:
+          type: integer
+        totalAum:
+          type: number
+        pendingInterests:
+          type: integer
+      required: [totalUsers, totalProperties, activeProjects, totalAum, pendingInterests]
+
+    # ── Object Storage ────────────────────────────────────────────────────────
+    UploadUrlRequest:
+      type: object
+      required: [fileName, contentType]
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadUrl, objectPath]
+      properties:
+        uploadUrl:
+          type: string
+        objectPath:
+          type: string
